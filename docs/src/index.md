@@ -55,7 +55,7 @@ outcome_name = "MedV"
 y, X = MLJ.unpack(boston, ==(Symbol(outcome_name)))
 
 # Instantiate an ML model; choose any single-outcome ML model from any package.
-RandomForest = @load RandomForestRegressor pkg=DecisionTree verbosity=0
+RandomForest = @load RandomForestRegressor pkg=DecisionTree verbosity=0 # Requires the package MLJDecisionTreeInterface to be installed
 random_forest = RandomForest(rng=123)
 model = MLJ.machine(random_forest, X, y)
 
@@ -100,8 +100,9 @@ show(data_shap, allcols = true)
 ```julia
 using Gadfly  # Plotting
 
-data_plot = DataFrames.by(data_shap, [:feature_name],
-                          mean_effect = [:shap_effect] => x -> mean(abs.(x.shap_effect)))
+data_plot =combine(groupby(data_shap,[:feature_name])) do subdf 
+           (mean_effect = mean(abs.(subdf.shap_effect)),)
+end
 
 data_plot = sort(data_plot, order(:mean_effect, rev = true))
 
